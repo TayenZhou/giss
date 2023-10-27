@@ -1,0 +1,14 @@
+---
+title: "practical4"
+output: html_document
+date: "2023-10-27"
+---
+
+```{r}
+library(terra)
+jan<-terra::rast("D:/England/after/study/term1/CASA0005 GISS/week3/practical3/wc2.1_5m_tavg_01.tif")
+# have a look at the raster layer jan
+plot(jan)
+```
+
+
