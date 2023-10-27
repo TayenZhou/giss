@@ -1,0 +1,76 @@
+---
+title: "homework4"
+output: html_document
+date: "2023-10-26"
+---
+
+
+Read csv data (global_gender_inequality)
+```{r}
+
+library("here")
+data <- read.csv(here("week4","HDR21-22_Composite_indices_complete_time_series.csv"),na = "n/a")
+head(data)
+
+global_gender_inequality <- data[c("iso3","country","region","gii_2010","gii_2011","gii_2012","gii_2013","gii_2014","gii_2015","gii_2016","gii_2017","gii_2018","gii_2019")]
+head(global_gender_inequality)
+summary(global_gender_inequality)
+
+```
+Read shapefile ()
+```{r}
+library(sf)
+library(ggplot2)
+sh <- st_read(here("week4/World_Countries_Generalized","World_Countries_Generalized.shp"))
+
+map_plot <- ggplot() +
+  geom_sf(data = sh) +
+  theme_minimal()
+print(map_plot)
+```
+
+The countrycode R package ?
+
+
+Creating a new column of difference in inequality between 2010 and 2019
+```{r}
+difference_in_inequality <- global_gender_inequality %>%
+  rowwise() %>%
+  mutate(diff = var(c_across(starts_with("gii"))))
+summary(difference_in_inequality)
+
+difference_in_inequality <- global_gender_inequality %>% ungroup()
+```
+
+
+Join data
+```{r}
+library(dplyr)
+library(janitor)
+difference_in_inequality <- clean_names(difference_in_inequality)
+worldmap <- sh %>%
+  clean_names()%>%
+  left_join(., 
+            difference_in_inequality,
+            by = c("country" = "country"))
+```
+
+
+
+Plot the map
+```{r}
+library(tmaptools)
+tmap_mode("plot")
+
+tm_shape(worldmap) + 
+tm_polygons("diff", 
+        style="quantile",
+        palette="Blues",
+        midpoint=NA,
+        title="Variance",
+        alpha = 0.8) + 
+  tm_compass(position = c("right", "top"),type = "arrow") + 
+  tm_scale_bar(position = c("left", "bottom")) +
+  tm_layout(title = "Difference in gender inequality between 2010 and 2019", legend.position = c("right", "bottom"))
+```
+
